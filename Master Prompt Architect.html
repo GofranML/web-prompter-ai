@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Master Prompt Architect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#121210;--panel:#1b1a17;--card:#1e1e1c;--line:#2f2d28;--text:#ecebe6;--mute:#9a968b;--faint:#6d6a61;
+  --accent:#d97757;--accent-ink:#fff;--ok:#6fcf97;--err:#f08a8a;--field:#151513;
+  --c-role:#4f8ff0;--c-task:#d99a3d;--c-context:#2fb5a3;--c-reasoning:#e0743a;--c-stop:#e0506a;--c-output:#a672e8;
+  --serif:'Newsreader',Georgia,serif;--sans:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark}}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#f5f2ea;--panel:#fffdf8;--card:#fffdf8;--line:#e2ddd0;--text:#23211c;--mute:#6b665a;--faint:#948e80;--field:#faf7ef;--accent:#c4552f;--ok:#237a4b;--err:#b3303f;color-scheme:light}}
+:root[data-theme="dark"]{color-scheme:dark}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--text);font:400 15px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+header{border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:5}
+.bar{max-width:1240px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px}
+.brand h1{font:500 22px/1.1 var(--serif);margin:0;letter-spacing:-.01em}
+.brand svg{width:26px;height:26px;color:var(--accent)}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 14px;font-size:13px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--faint)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn[disabled]{opacity:.55;cursor:wait}
+main{max-width:1240px;margin:0 auto;padding:24px 20px 60px;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:28px;align-items:start}
+@media(max-width:900px){main{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+.stack{display:flex;flex-direction:column;gap:20px}
+label.lbl{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.hint{font-size:12px;color:var(--mute);margin:0 0 6px}
+textarea,input[type=text],select{width:100%;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:14px}
+textarea{resize:vertical;line-height:1.55}
+textarea:focus,input:focus,select:focus{border-color:var(--accent);outline:none}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+@media(max-width:480px){.row2{grid-template-columns:1fr}}
+.gen{width:100%;justify-content:center;margin-top:16px;padding:12px;font-size:14px}
+.msg{margin-top:14px;padding:10px 12px;border-radius:10px;font-size:13px;border:1px solid var(--err);color:var(--err)}
+.presets{display:flex;flex-direction:column;gap:8px}
+.preset{text-align:left;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;width:100%}
+.preset:hover{border-color:var(--accent)}
+.preset b{display:block;font-size:13px;font-weight:600}
+.preset span{display:block;font-size:12px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+h3.sec{font-size:14px;font-weight:600;margin:0 0 12px}
+.guide{display:grid;gap:10px;font-size:13px;color:var(--mute)}
+.guide div{display:flex;gap:10px}
+.dot{width:9px;height:9px;border-radius:50%;margin-top:7px;flex:none}
+.guide b{color:var(--text);font-weight:600}
+.toolbar{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center}
+.tabs{display:flex;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:3px}
+.tab{border:0;background:none;padding:7px 12px;border-radius:8px;font-size:13px;font-weight:500;color:var(--mute);cursor:pointer}
+.tab[aria-selected=true]{background:var(--accent);color:var(--accent-ink)}
+.opts{display:flex;gap:14px;font-size:13px;color:var(--mute);flex-wrap:wrap}
+.opts label{display:flex;gap:6px;align-items:center;cursor:pointer}
+.opts input{accent-color:var(--accent)}
+.analysis{border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);border-radius:12px;padding:12px 14px;font-size:13px;color:var(--mute)}
+.analysis b{color:var(--accent);font-weight:600}
+.poster{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;position:relative}
+.poster h2{font:400 clamp(26px,4vw,38px)/1.1 var(--serif);letter-spacing:-.02em;margin:0 0 24px;padding-bottom:20px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center}
+.poster h2 svg{width:34px;height:34px;color:var(--accent);flex:none}
+.item{display:grid;grid-template-columns:minmax(0,9fr) minmax(0,3fr);gap:24px;align-items:center;padding:10px 0}
+@media(max-width:640px){.item{grid-template-columns:1fr;gap:8px}}
+.txt{border-left:3px solid var(--c);padding-left:16px;font:400 17px/1.6 var(--serif);white-space:pre-line}
+.tag{border-left:3px solid var(--c);padding:2px 0 2px 12px;display:flex;align-items:center;justify-content:space-between;color:var(--c);font-weight:600;font-size:15px}
+.mini{border:1px solid var(--line);background:var(--panel);color:var(--mute);border-radius:8px;padding:4px 8px;font-size:12px;cursor:pointer}
+.mini:hover{color:var(--text);border-color:var(--faint)}
+.foot{margin-top:24px;padding-top:18px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;font-size:13px;color:var(--mute)}
+.link{background:none;border:0;color:var(--accent);cursor:pointer;padding:0;font-weight:500}
+.field{padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--field);margin-bottom:12px}
+.field .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.pill{font-size:12px;font-weight:600;padding:2px 10px;border-radius:999px;border:1px solid var(--c);color:var(--c)}
+.field textarea{font-family:var(--serif);font-size:16px;background:var(--panel)}
+pre{margin:0;padding:16px;background:var(--field);border:1px solid var(--line);border-radius:12px;font:400 13px/1.65 var(--mono);white-space:pre-wrap;word-break:break-word;max-height:620px;overflow:auto}
+.loading{position:absolute;inset:0;background:color-mix(in srgb,var(--card) 86%,transparent);display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;border-radius:14px;text-align:center;padding:20px;z-index:2}
+.loading.on{display:flex}
+.spin{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:s 1s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spin{animation-duration:3s}}
+#history{display:none;border-bottom:1px solid var(--line);background:var(--panel)}
+#history.on{display:block}
+#history .in{max-width:1240px;margin:0 auto;padding:16px 20px}
+.hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;margin-top:10px}
+.hitem{text-align:left;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer}
+.hitem:hover{border-color:var(--accent)}
+.hitem small{color:var(--faint);display:block}
+.hitem span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M4.9 19.1L19.1 4.9"/></svg>
+      <h1>Master Prompt Architect</h1>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn" id="hbtn" aria-expanded="false">Riwayat (<span id="hcount">0</span>)</button>
+      <button class="btn primary" id="copyTop">Salin master prompt</button>
+    </div>
+  </div>
+</header>
+
+<div id="history"><div class="in">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <h3 class="sec" style="margin:0">Riwayat prompt</h3>
+    <button class="link" id="hclear">Hapus semua</button>
+  </div>
+  <div class="hgrid" id="hgrid"></div>
+</div></div>
+
+<main>
+  <div class="stack">
+    <section class="panel">
+      <label class="lbl" for="idea">Tulis ide atau prompt singkat</label>
+      <p class="hint">Cukup satu atau dua kalimat. AI akan menyusunnya menjadi enam bagian.</p>
+      <textarea id="idea" rows="4" placeholder="Contoh: Buatkan rencana peluncuran 90 hari untuk aplikasi AI produktivitas khusus founder startup."></textarea>
+      <div style="margin-top:14px">
+        <label class="lbl" for="extra">Konteks tambahan (opsional)</label>
+        <input type="text" id="extra" placeholder="Misal: tim 2 orang, budget minim, target usia 25–40 tahun">
+      </div>
+      <div class="row2">
+        <div><label class="lbl" for="lang">Bahasa prompt</label>
+          <select id="lang"><option value="Indonesian">Bahasa Indonesia</option><option value="English">English</option></select></div>
+        <div><label class="lbl" for="rigor">Tingkat ketajaman</label>
+          <select id="rigor"><option value="Tinggi (Founder/Expert Grade)">Founder / Expert</option><option value="Sangat Teknis & Detail">Teknis & metrik</option><option value="Kreatif & Eksploratif">Kreatif & strategis</option></select></div>
+      </div>
+      <div class="msg" id="err" hidden></div>
+      <button class="btn primary gen" id="gen">Bangun master prompt</button>
+    </section>
+
+    <section class="panel">
+      <h3 class="sec">Coba contoh</h3>
+      <div class="presets" id="presets"></div>
+    </section>
+
+    <section class="panel">
+      <h3 class="sec">Fungsi tiap bagian</h3>
+      <div class="guide" id="guide"></div>
+    </section>
+  </div>
+
+  <div class="stack">
+    <div class="panel toolbar" style="padding:12px">
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" data-v="anatomy" aria-selected="true">Visual</button>
+        <button class="tab" role="tab" data-v="edit" aria-selected="false">Edit</button>
+        <button class="tab" role="tab" data-v="raw" aria-selected="false">Teks utuh</button>
+      </div>
+      <div class="opts">
+        <label><input type="checkbox" id="xml"> Tag XML</label>
+        <label><input type="checkbox" id="md"> Judul Markdown</label>
+      </div>
+    </div>
+    <div class="analysis" id="analysis" hidden></div>
+    <div id="view"></div>
+  </div>
+</main>
+
+<script>
+const S=[
+ {id:'role',label:'Role',title:'Peran & keahlian',c:'--c-role',d:'Menetapkan persona, tingkat keahlian, dan prioritas cara berpikir AI.',ph:'Act as a senior go-to-market strategist with deep expertise...'},
+ {id:'task',label:'Task',title:'Tugas utama',c:'--c-task',d:'Instruksi spesifik tentang apa yang harus dibangun, divalidasi, dan diselesaikan.',ph:'Build a 90-day launch plan for a new AI productivity tool...'},
+ {id:'context',label:'Context',title:'Konteks & batasan',c:'--c-context',d:'Fakta kunci: produk atau topik, tim, sumber daya, dan risiko utama.',ph:"Here's what I know:\n- Product: ...\n- Team: ...\n- Resources: ...\n- Key Risks: ..."},
+ {id:'reasoning',label:'Reasoning',title:'Penalaran & tujuan',c:'--c-reasoning',d:'Tujuan akhir dan alasan mengapa pendekatan tertentu dipilih.',ph:'The goal is a crisp, launch-ready strategy...'},
+ {id:'stopConditions',label:'Stop conditions',title:'Kondisi berhenti',c:'--c-stop',d:'Kriteria selesai yang ketat sebelum AI mengakhiri jawabannya.',ph:'Only stop when:\n- A 12-week roadmap...'},
+ {id:'output',label:'Output',title:'Format keluaran',c:'--c-output',d:'Struktur hasil akhir beserta atribut tiap poinnya.',ph:'Present as a weekly sprint plan. For each action:\n- Action: ...'}
+];
+const EX={shortInput:"Buatkan rencana peluncuran 90 hari untuk aplikasi manajer tugas AI khusus founder.",
+analysis:"Prompt ini diperkaya dengan persona GTM strategist senior, batasan tim kecil (2 orang), risiko adopsi dan retensi, serta struktur output mingguan yang siap dieksekusi.",
+role:"Act as a senior go-to-market strategist with deep expertise launching early-stage SaaS tools. Prioritize traction speed over brand perfection.",
+task:"Build a 90-day launch plan for a new AI productivity tool for founders. Validate the core messaging, end with a launch-ready brief.",
+context:"Here’s what I know:\n- Product: AI task manager for founders (25–40).\n- Team: 2-person (founder + growth marketer).\n- Resources: lean budget, 15–20 beta users.\n- Key risks: adoption, retention, positioning.",
+reasoning:"The goal is a crisp, launch-ready strategy. By locking in ICP clarity upfront and asking you to defend each step, the output will be truly actionable and founder-grade.",
+stopConditions:"Only stop when:\n- A 12-week roadmap with 3–4 actions per week.\n- Every action links to the risk it addresses.\n- The plan ends with a final launch decision gate.",
+output:"Present as a weekly sprint plan. For each action:\n- Action: the specific task to complete.\n- Owner: founder, growth lead, or designer.\n- Risk: adoption, retention, or positioning.\n- Rationale + output: reasoning and deliverable."};
+const PRE=[
+ {t:"Rencana peluncuran SaaS",p:"Buatkan rencana peluncuran 90 hari untuk aplikasi AI task manager khusus founder startup dengan tim 2 orang dan budget terbatas.",l:"English"},
+ {t:"Arsitektur sistem e-commerce",p:"Rancang arsitektur backend microservices yang tahan banting untuk flash sale 100.000 user bersamaan.",l:"Indonesian"},
+ {t:"Strategi konten B2B LinkedIn",p:"Buat strategi konten organik 30 hari di LinkedIn untuk agensi desain UI/UX agar mendapatkan klien enterprise.",l:"Indonesian"},
+ {t:"Kurikulum belajar full-stack",p:"Susun roadmap belajar intensif 16 minggu menjadi full-stack TypeScript developer untuk pemula yang bekerja penuh waktu.",l:"Indonesian"}
+];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+let data={...EX},view='anatomy',history=[],busy=false;
+
+try{history=JSON.parse(localStorage.getItem('mpa-history')||'[]')}catch(e){history=[]}
+const saveH=()=>{try{localStorage.setItem('mpa-history',JSON.stringify(history))}catch(e){}};
+
+function compiled(){
+  const m=[['role','ROLE','role'],['task','TASK','task'],['context','CONTEXT','context'],['reasoning','REASONING','reasoning'],['stopConditions','STOP CONDITIONS','stop_conditions'],['output','OUTPUT','output_format']];
+  return m.map(([k,h,x])=>{const c=data[k]||'';
+    if($('xml').checked)return `<${x}>\n${c}\n</${x}>`;
+    if($('md').checked)return `### ${h}\n${c}`;
+    return c}).join('\n\n');
+}
+async function copy(text,btn,done){
+  let ok=false;
+  try{await navigator.clipboard.writeText(text);ok=true}catch(e){
+    const t=document.createElement('textarea');t.value=text;t.style.cssText='position:fixed;left:-9999px';
+    document.body.appendChild(t);t.select();try{ok=document.execCommand('copy')}catch(_){}t.remove();
+  }
+  if(btn){const o=btn.textContent;btn.textContent=ok?done:'Gagal menyalin';setTimeout(()=>btn.textContent=o,1800)}
+}
+function render(){
+  const a=$('analysis');a.hidden=!data.analysis;a.innerHTML=data.analysis?`<b>Analisis: </b>${esc(data.analysis)}`:'';
+  const v=$('view');
+  if(view==='anatomy'){
+    v.innerHTML=`<div class="poster"><div class="loading" id="load"><div class="spin"></div><div style="font:500 18px var(--serif)">Menyusun master prompt…</div><div class="hint">Role, task, context, reasoning, stop conditions, output</div></div>
+    <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v20M2 12h20M4.9 4.9l14.2 14.2M4.9 19.1L19.1 4.9M7.5 3.2l9 17.6M3.2 7.5l17.6 9M3.2 16.5l17.6-9M7.5 20.8l9-17.6"/></svg>The anatomy of a prompt</h2>
+    ${S.map(s=>`<div class="item" style="--c:var(${s.c})"><div class="txt">${esc(data[s.id]||'')}</div><div class="tag"><span>${s.label}</span><button class="mini" data-copy="${s.id}">Salin</button></div></div>`).join('')}
+    <div class="foot"><span>Ingin mengubah detailnya? <button class="link" data-go="edit">Buka editor</button></span><button class="btn primary" id="copyAll">Salin seluruh prompt</button></div></div>`;
+  }else if(view==='edit'){
+    v.innerHTML=`<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div><h3 class="sec" style="margin:0">Edit tiap bagian</h3><p class="hint" style="margin:0">Perubahan langsung tersimpan di teks utuh.</p></div><button class="btn" data-go="anatomy">Selesai</button></div>
+    ${S.map(s=>`<div class="field" style="--c:var(${s.c})"><div class="top"><span class="pill">${s.title}</span><button class="mini" data-copy="${s.id}">Salin</button></div><p class="hint">${s.d}</p><textarea data-k="${s.id}" rows="${['context','output','stopConditions'].includes(s.id)?6:3}" placeholder="${esc(s.ph)}">${esc(data[s.id]||'')}</textarea></div>`).join('')}</div>`;
+  }else{
+    v.innerHTML=`<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px"><div><h3 class="sec" style="margin:0">Siap tempel</h3><p class="hint" style="margin:0">Tempel ke Claude, ChatGPT, atau Gemini.</p></div><button class="btn primary" id="copyAll">Salin semua</button></div><pre>${esc(compiled())}</pre></div>`;
+  }
+  if(busy&&$('load'))$('load').classList.add('on');
+}
+function renderHist(){
+  $('hcount').textContent=history.length;
+  $('hgrid').innerHTML=history.length?history.map((h,i)=>`<button class="hitem" data-h="${i}"><small>${esc(h.time||'')}</small><span>${esc(h.shortInput)}</span></button>`).join(''):'<p class="hint">Belum ada riwayat. Hasil yang kamu buat akan muncul di sini.</p>';
+}
+function setErr(t){const e=$('err');e.hidden=!t;e.textContent=t||''}
+
+async function generate(idea,lang){
+  idea=(idea??$('idea').value).trim();lang=lang||$('lang').value;
+  if(!idea){setErr('Tulis ide atau prompt singkat dulu, lalu klik Bangun master prompt.');return}
+  setErr('');busy=true;$('gen').disabled=true;$('gen').textContent='Menyusun…';if($('load'))$('load').classList.add('on');
+  const idn=lang==='Indonesian';
+  const brief=`You are an elite Prompt Engineer using the "Anatomy of a Claude Prompt" framework. Expand the user's brief into a rigorous, actionable master prompt with exactly 6 sections:
+1. role: a specific senior expert persona plus a guiding trade-off priority (e.g. "Act as a senior... Prioritize X over Y.").
+2. task: direct, high-impact action verbs stating what to build, validate, and conclude with.
+3. context: begin with "${idn?'Berikut konteks yang diketahui:':"Here's what I know:"}" then 4 dash bullets: core subject details; team/actor profile; resources/constraints/tools; key risks. Infer realistic professional details if missing.
+4. reasoning: the underlying goal and why this approach works (e.g. "The goal is... By locking in X upfront and asking you to defend each step...").
+5. stopConditions: begin with "${idn?'Hanya berhenti ketika:':'Only stop when:'}" then 3-4 strict, measurable dash bullets.
+6. output: begin with how to present the deliverable ("Present as a..."), then "For each [item]:" and 4 dash sub-attributes.
+Also give "analysis": a short explanation in Indonesian of how you elevated the raw prompt.
+Write the 6 sections in ${idn?'natural, professional Bahasa Indonesia':'crisp, professional English'}.
+
+User brief: "${idea}"
+${$('extra').value.trim()?`Extra context from user: "${$('extra').value.trim()}"\n`:''}Rigor level: ${$('rigor').value}
+
+Reply with ONLY a JSON object with string keys: analysis, role, task, context, reasoning, stopConditions, output. No markdown fences.`;
+  try{
+    const sample=await (window.claude&&claude.use?claude.use('sample'):null);
+    if(!sample)throw {code:'none'};
+    const r=await sample.json(brief,{modelTier:'default',cache:false});
+    const need=['analysis','role','task','context','reasoning','stopConditions','output'];
+    if(!r||need.some(k=>typeof r[k]!=='string'))throw {code:'bad'};
+    data={shortInput:idea,time:new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}),...Object.fromEntries(need.map(k=>[k,r[k]]))};
+    history=[data,...history].slice(0,10);saveH();renderHist();
+  }catch(e){
+    const c=e&&e.code;
+    setErr(c==='none'||c==='not_granted'?'Fitur AI belum diizinkan di halaman ini. Izinkan akses saat diminta, lalu klik Bangun master prompt lagi.':c==='rate_limited'?'Terlalu banyak permintaan. Tunggu sebentar, lalu coba lagi.':'Hasil dari AI tidak bisa dibaca. Klik Bangun master prompt sekali lagi.');
+  }
+  busy=false;$('gen').disabled=false;$('gen').textContent='Bangun master prompt';render();
+}
+
+$('presets').innerHTML=PRE.map((p,i)=>`<button class="preset" data-p="${i}"><b>${p.t} <small style="color:var(--faint);font-weight:500">${p.l==='English'?'EN':'ID'}</small></b><span>${p.p}</span></button>`).join('');
+$('guide').innerHTML=S.map(s=>`<div><span class="dot" style="background:var(${s.c})"></span><span><b style="color:var(${s.c})">${s.label}:</b> ${s.d}</span></div>`).join('');
+
+document.addEventListener('click',e=>{
+  const t=e.target.closest('button');if(!t)return;
+  if(t.dataset.copy)copy(data[t.dataset.copy]||'',t,'Tersalin');
+  else if(t.dataset.go){view=t.dataset.go;syncTabs();render()}
+  else if(t.dataset.p!==undefined){const p=PRE[t.dataset.p];$('idea').value=p.p;$('lang').value=p.l;generate(p.p,p.l)}
+  else if(t.dataset.h!==undefined){data=history[t.dataset.h];$('idea').value=data.shortInput;$('history').classList.remove('on');$('hbtn').setAttribute('aria-expanded','false');render()}
+  else if(t.id==='copyAll')copy(compiled(),t,'Tersalin');
+  else if(t.id==='copyTop')copy(compiled(),t,'Tersalin');
+  else if(t.id==='gen')generate();
+  else if(t.id==='hbtn'){const on=$('history').classList.toggle('on');t.setAttribute('aria-expanded',on)}
+  else if(t.id==='hclear'){history=[];saveH();renderHist()}
+  else if(t.classList.contains('tab')){view=t.dataset.v;syncTabs();render()}
+});
+function syncTabs(){document.querySelectorAll('.tab').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===view))}
+document.addEventListener('input',e=>{if(e.target.dataset&&e.target.dataset.k)data[e.target.dataset.k]=e.target.value});
+$('xml').onchange=()=>{if($('xml').checked)$('md').checked=false;if(view==='raw')render()};
+$('md').onchange=()=>{if($('md').checked)$('xml').checked=false;if(view==='raw')render()};
+$('idea').addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='Enter')generate()});
+renderHist();render();
+</script>
+</body>
+</html>
